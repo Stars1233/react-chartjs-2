@@ -69,13 +69,3 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 .eab {
   margin: calc(var(--ifm-menu-link-padding-horizontal) + 0.5rem) 0 0 -0.5rem;
 }
-
-.crbn {
-  margin: calc(var(--ifm-menu-link-padding-horizontal) + 0.5rem) 0.5rem 0 0;
-
-  &.dark #carbon-responsive {
-    --carbon-bg-primary: transparent;
-    --carbon-bg-secondary: var(--ifm-toc-border-color);
-    --carbon-text-color: hsl(0, 0%, 80%);
-  }
-}

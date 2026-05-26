@@ -2,23 +2,6 @@
 import { useEffect, useRef } from 'react';
 import { useColorMode } from '@docusaurus/theme-common';
 import OriginalDocSidebar from '@theme-original/DocSidebar';
-import Cookies from 'js-cookie';
-
-const COOKIE_NAME = 'bwndw_cached_use_fallback';
-const COOKIE_DURATION = 28; // days (4 weeks)
-
-function saveUseFallback(value) {
-  Cookies.set(COOKIE_NAME, value.toString(), {
-    expires: COOKIE_DURATION,
-    sameSite: 'lax',
-  });
-}
-
-function readUseFallback() {
-  const cached = Cookies.get(COOKIE_NAME);
-
-  return cached === undefined ? null : cached === 'true';
-}
 
 let scriptPromise = null;
 
@@ -41,7 +24,7 @@ async function loadEthicalAdsScript() {
     })();
   }
 
-  return scriptPromise;
+  return scriptPromise || Promise.resolve([]);
 }
 
 function createEthicalAdsBlock(root) {
@@ -57,24 +40,6 @@ function createEthicalAdsBlock(root) {
   if (typeof ethicalads !== 'undefined') {
     ethicalads.load();
   }
-
-  return banner;
-}
-
-function createCarbonAdsBlock(root) {
-  const banner = document.createElement('div');
-  const script = document.createElement('script');
-
-  banner.className = 'crbn bwndw-loading';
-  banner.id = 'bwndw';
-
-  script.src =
-    '//cdn.carbonads.com/carbon.js?serve=CWBDT53N&placement=react-chartjs-2jsorg&format=cover';
-  script.id = '_carbonads_js';
-  script.async = true;
-
-  banner.appendChild(script);
-  root?.appendChild(banner);
 
   return banner;
 }
@@ -101,31 +66,10 @@ export default function DocSidebar(props) {
         bannerRef.current = banner;
         banner.classList.remove('bwndw-loading');
       };
-      const cachedUseFallback = true; // readUseFallback();
 
-      if (cachedUseFallback === true) {
-        banner = createCarbonAdsBlock(root);
-        showBanner();
-      } else {
-        banner = createEthicalAdsBlock(root);
+      banner = createEthicalAdsBlock(root);
 
-        loadEthicalAdsScript().then(placements => {
-          if (cachedUseFallback === null) {
-            const useFallback =
-              !placements.length ||
-              placements[0].response.campaign_type !== 'paid';
-
-            if (useFallback) {
-              banner.remove();
-              banner = createCarbonAdsBlock(root);
-            }
-
-            saveUseFallback(useFallback);
-          }
-
-          showBanner();
-        });
-      }
+      loadEthicalAdsScript().then(showBanner);
     }
   }, []);
 
